@@ -1,0 +1,5 @@
+{
+  "name": "NetoPad",
+  "description": "Uma ferramenta avançada baseada na web para mapear visualmente os controles do gamepad para qualquer jogo. Crie, salve e compartilhe perfis de controle personalizados com uma interface de arrastar e soltar elegante e intuitiva e visualização de entrada ao vivo.",
+  "requestFramePermissions": []
+}

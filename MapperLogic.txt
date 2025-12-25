@@ -1,0 +1,156 @@
+// Este é o código Kotlin completo para o MapperService.
+// Ele agora inclui a lógica para SALVAR e CARREGAR as posições dos botões.
+
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
+import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.Path
+import android.graphics.PixelFormat
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent
+import android.widget.ImageView
+import android.graphics.Color
+
+class MapperService : AccessibilityService() {
+
+    private lateinit var windowManager: WindowManager
+    private lateinit var prefs: SharedPreferences
+    
+    // Mapas para gerenciar múltiplos botões e suas coordenadas
+    private val floatingButtons = mutableMapOf<Int, ImageView>()
+    private val buttonCoordinates = mutableMapOf<Int, Pair<Float, Float>>()
+
+    // Mapeia os botões que queremos criar
+    private val buttonsToCreate = mapOf(
+        KeyEvent.KEYCODE_BUTTON_A to Color.BLUE,
+        KeyEvent.KEYCODE_BUTTON_B to Color.RED,
+        KeyEvent.KEYCODE_BUTTON_X to Color.GREEN,
+        KeyEvent.KEYCODE_BUTTON_Y to Color.YELLOW
+    )
+
+    // Estado para teclas modificadoras (para combos)
+    private var isLTPressed = false
+    private var isRTPressed = false
+
+    // Chamado quando o serviço é conectado pelo sistema
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        // Inicializa o SharedPreferences para salvar/carregar dados
+        prefs = getSharedPreferences("ConfigMapeador", Context.MODE_PRIVATE)
+        
+        loadAllButtonPositions()
+        setupAllOverlays()
+    }
+
+    // Carrega TODAS as posições salvas do SharedPreferences
+    private fun loadAllButtonPositions() {
+        buttonsToCreate.keys.forEach { keyCode ->
+            val x = prefs.getFloat("pos_${keyCode}_x", -1f)
+            val y = prefs.getFloat("pos_${keyCode}_y", -1f)
+            if (x != -1f) {
+                buttonCoordinates[keyCode] = x to y
+            }
+        }
+    }
+
+    // Salva a posição de UM botão específico
+    private fun saveButtonPosition(keyCode: Int, x: Float, y: Float) {
+        val editor = prefs.edit()
+        editor.putFloat("pos_${keyCode}_x", x)
+        editor.putFloat("pos_${keyCode}_y", y)
+        editor.apply() // Salva de verdade
+    }
+
+    // Cria todos os botões flutuantes que precisamos
+    private fun setupAllOverlays() {
+        var initialXOffset = 0
+        buttonsToCreate.forEach { (keyCode, color) ->
+            // Usa a posição salva, ou calcula uma posição inicial padrão se não houver
+            val initialX = buttonCoordinates[keyCode]?.first?.toInt() ?: (100 + initialXOffset)
+            val initialY = buttonCoordinates[keyCode]?.second?.toInt() ?: 100
+            createFloatingButton(keyCode, color, initialX, initialY)
+            initialXOffset += 120 // Espaça os botões caso não tenham sido salvos ainda
+        }
+    }
+
+    private fun createFloatingButton(keyCode: Int, color: Int, initialX: Int, initialY: Int) {
+        val buttonView = ImageView(this).apply {
+            setBackgroundColor(Color.argb(128, Color.red(color), Color.green(color), Color.blue(color)))
+        }
+
+        val params = WindowManager.LayoutParams(
+            100, 100,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            x = initialX
+            y = initialY
+        }
+
+        // Lógica para arrastar e salvar a posição
+        buttonView.setOnTouchListener { view, event ->
+            when (event.action) {
+                MotionEvent.ACTION_MOVE -> {
+                    params.x = (event.rawX - view.width / 2).toInt()
+                    params.y = (event.rawY - view.height / 2).toInt()
+                    windowManager.updateViewLayout(view, params)
+                    buttonCoordinates[keyCode] = event.rawX to event.rawY
+                }
+                MotionEvent.ACTION_UP -> {
+                    // Quando o usuário solta o botão, SALVA a posição!
+                    val currentCoords = buttonCoordinates[keyCode]
+                    if (currentCoords != null) {
+                        saveButtonPosition(keyCode, currentCoords.first, currentCoords.second)
+                    }
+                }
+            }
+            true
+        }
+
+        windowManager.addView(buttonView, params)
+        floatingButtons[keyCode] = buttonView
+    }
+    
+    // Simula um toque físico em coordenadas X e Y
+    private fun executeTouch(x: Float, y: Float) {
+        val path = Path().apply { moveTo(x, y) }
+        val gesture = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(path, 0, 50))
+            .build()
+        dispatchGesture(gesture, null, null)
+    }
+
+    override fun onKeyEvent(event: KeyEvent): Boolean {
+        val keyCode = event.keyCode
+
+        when (keyCode) {
+            KeyEvent.KEYCODE_BUTTON_L2 -> isLTPressed = (event.action == KeyEvent.ACTION_DOWN)
+            KeyEvent.KEYCODE_BUTTON_R2 -> isRTPressed = (event.action == KeyEvent.ACTION_DOWN)
+        }
+
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            val coords = buttonCoordinates[keyCode]
+            if (coords != null) {
+                if (isLTPressed && keyCode == KeyEvent.KEYCODE_BUTTON_A) {
+                    executeTouch(coords.first, coords.second - 100)
+                } else {
+                    executeTouch(coords.first, coords.second)
+                }
+                return true
+            }
+        }
+        
+        return super.onKeyEvent(event)
+    }
+
+    override fun onInterrupt() {
+        floatingButtons.values.forEach { if(it.isAttachedToWindow) windowManager.removeView(it) }
+    }
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+}

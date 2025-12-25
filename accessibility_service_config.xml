@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  Este é um arquivo de configuração de recursos para um projeto Android nativo.
+  Ele deve ser colocado no diretório 'app/src/main/res/xml/' no Android Studio.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeAllMask"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
+    android:canPerformGestures="true"
+    android:canRetrieveWindowContent="true"
+    android:notificationTimeout="100" />
+
+<!--
+Pontos importantes:
+- android:canPerformGestures="true": É o que permite o clique real.
+- android:accessibilityFlags="flagRetrieveInteractiveWindows": Ajuda o serviço a "ver" melhor a tela.
+- Lembrete: Ao testar no celular, você terá que ir em Configurações > Acessibilidade 
+  e ativar o serviço do app manualmente.
+-->

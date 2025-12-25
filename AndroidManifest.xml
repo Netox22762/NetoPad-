@@ -1,0 +1,36 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  Este é um arquivo de configuração para um projeto Android nativo.
+  Ele deve ser colocado na raiz do diretório 'app/src/main/' no Android Studio.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.seunome.mapeador">
+
+    <!-- Permissões para conectividade com Gamepad -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- NOVA Permissão para desenhar sobre outros apps (Overlay) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+
+    <application>
+        <!-- Outras configurações de aplicativo, como sua Activity principal, iriam aqui -->
+
+        <!-- Definição do Serviço de Acessibilidade -->
+        <service
+            android:name=".MapperService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <!-- Link para o arquivo de configuração do serviço -->
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+    </application>
+
+</manifest>
