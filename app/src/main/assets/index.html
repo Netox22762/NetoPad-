@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NetoPad - Bridge Demo</title>
+  <style>
+    body { font-family: sans-serif; padding: 16px; }
+    input, button { font-size: 16px; padding: 8px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>NetoPad - Bridge Demo</h1>
+  <p>Use a interface abaixo para enviar comandos de clique para o MapperService.</p>
+
+  <label for="x">X:</label>
+  <input id="x" type="number" value="200" />
+  <br/>
+  <label for="y">Y:</label>
+  <input id="y" type="number" value="400" />
+  <br/>
+  <button id="click">Enviar clique</button>
+  <button id="open">Abrir configurações de Acessibilidade</button>
+
+  <script>
+    const clickBtn = document.getElementById('click')
+    const openBtn = document.getElementById('open')
+
+    clickBtn.addEventListener('click', () => {
+      const x = parseInt(document.getElementById('x').value, 10)
+      const y = parseInt(document.getElementById('y').value, 10)
+      if (window.NativeBridge && window.NativeBridge.click) {
+        window.NativeBridge.click(x, y)
+      } else {
+        alert('NativeBridge não disponível')
+      }
+    })
+
+    openBtn.addEventListener('click', () => {
+      if (window.NativeBridge && window.NativeBridge.openAccessibilitySettings) {
+        window.NativeBridge.openAccessibilitySettings()
+      } else {
+        alert('NativeBridge não disponível')
+      }
+    })
+  </script>
+</body>
+</html>
