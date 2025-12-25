@@ -7,8 +7,8 @@ import { useRef, useEffect } from 'react';
  */
 export function usePrevious<T>(value: T): T | undefined {
   // FIX: The error "Expected 1 arguments, but got 0" occurs because useRef<T>() requires an initial value if T cannot be undefined.
-  // The type is changed to `T | undefined` to reflect that the ref is initialized without a value.
-  const ref = useRef<T | undefined>();
+  // Explicitly initialize useRef with `undefined` to resolve the error.
+  const ref = useRef<T | undefined>(undefined);
   useEffect(() => {
     ref.current = value;
   }, [value]);

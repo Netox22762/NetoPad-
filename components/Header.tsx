@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Gamepad2, PlusCircle, FolderOpen, Save, Wifi, WifiOff, Sparkles, Loader2, TestTube2, Download } from 'lucide-react';
+import { Gamepad2, PlusCircle, FolderOpen, Save, Wifi, WifiOff, Sparkles, Loader2, TestTube2, Download, Code2 } from 'lucide-react';
 
 interface HeaderProps {
   onNewProfile: () => void;
   onSaveProfile: () => void;
   onLoadProfile: () => void;
   onExportCoords: () => void;
+  onViewNativeCode: () => void;
   profileName?: string;
   isConnected: boolean;
   onAiAutoMap: () => void;
@@ -14,12 +15,12 @@ interface HeaderProps {
   isTestMode: boolean;
   onToggleTestMode: () => void;
   isAiDisabled: boolean;
-  isExportDisabled: boolean;
+  isActionDisabled: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
-    onNewProfile, onSaveProfile, onLoadProfile, onExportCoords, profileName, isConnected, 
-    onAiAutoMap, isAiLoading, isTestMode, onToggleTestMode, isAiDisabled, isExportDisabled 
+    onNewProfile, onSaveProfile, onLoadProfile, onExportCoords, onViewNativeCode, profileName, isConnected, 
+    onAiAutoMap, isAiLoading, isTestMode, onToggleTestMode, isAiDisabled, isActionDisabled 
 }) => {
   return (
     <header className="bg-slate-800/50 backdrop-blur-sm p-3 shadow-lg flex justify-between items-center border-b border-slate-700">
@@ -63,9 +64,13 @@ const Header: React.FC<HeaderProps> = ({
           <Save size={20} />
           <span className="hidden md:inline">Salvar</span>
         </button>
-         <button onClick={onExportCoords} disabled={isExportDisabled} title="Exportar Coordenadas para Uso Nativo" className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+         <button onClick={onExportCoords} disabled={isActionDisabled} title="Exportar Coordenadas para Uso Nativo" className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
           <Download size={20} />
           <span className="hidden md:inline">Exportar</span>
+        </button>
+        <button onClick={onViewNativeCode} disabled={isActionDisabled} title="Ver Código Nativo" className="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+          <Code2 size={20} />
+          <span className="hidden md:inline">Ver Código</span>
         </button>
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isConnected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
           {isConnected ? <Wifi size={20} /> : <WifiOff size={20} />}

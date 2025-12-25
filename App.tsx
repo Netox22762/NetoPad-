@@ -12,6 +12,7 @@ import GamepadVisualizer from './components/GamepadVisualizer';
 import ProfileManagerModal from './components/ProfileManagerModal';
 import Onboarding from './components/Onboarding';
 import SettingsModal from './components/SettingsModal';
+import NativeCodeViewerModal from './components/NativeCodeViewerModal';
 
 const App: React.FC = () => {
   const gamepadState = useGamepad();
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [isNativeCodeModalOpen, setNativeCodeModalOpen] = useState(false);
   const [editingMapping, setEditingMapping] = useState<Mapping | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('onboardingComplete'));
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -220,7 +222,7 @@ const App: React.FC = () => {
     const header = `// Coordenadas para o Perfil: ${activeProfile.name}\n// Gerado pelo NetoPad em ${new Date().toLocaleString()}\n\n`;
     const content = activeProfile.mappings.map(m => {
         const key = 'key' in m ? m.key : (m as ComboMapping).modifierKey ? `${(m as ComboMapping).modifierKey}+${(m as ComboMapping).actionKey}` : 'N/A';
-        return `${m.label} (${m.type}): x=${Math.round(m.x)}, y=${Math.round(m.y)}`;
+        return `// ${m.label} (${m.type}) -> ${key}\nprivate var pos_${key}_x: Float = ${Math.round(m.x)}f\nprivate var pos_${key}_y: Float = ${Math.round(m.y)}f\n`;
     }).join('\n');
 
     const fullContent = header + content;
@@ -252,6 +254,7 @@ const App: React.FC = () => {
         onSaveProfile={handleSaveProfile}
         onLoadProfile={() => setProfileModalOpen(true)}
         onExportCoords={handleExportCoords}
+        onViewNativeCode={() => setNativeCodeModalOpen(true)}
         profileName={activeProfile?.name}
         isConnected={gamepadState.isConnected}
         onAiAutoMap={handleAiAutoMapping}
@@ -259,7 +262,7 @@ const App: React.FC = () => {
         isTestMode={isTestMode}
         onToggleTestMode={() => setIsTestMode(prev => !prev)}
         isAiDisabled={!activeProfile?.backgroundImage}
-        isExportDisabled={!activeProfile || activeProfile.mappings.length === 0}
+        isActionDisabled={!activeProfile || activeProfile.mappings.length === 0}
       />
       <main className="flex-grow flex flex-col lg:flex-row p-4 gap-4">
         <Toolbar />
@@ -293,6 +296,10 @@ const App: React.FC = () => {
             onSave={handleUpdateMapping}
          />
       )}
+      <NativeCodeViewerModal
+        isOpen={isNativeCodeModalOpen}
+        onClose={() => setNativeCodeModalOpen(false)}
+      />
     </div>
   );
 };

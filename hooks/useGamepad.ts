@@ -20,8 +20,8 @@ export const useGamepad = (): GamepadState => {
     axes: {},
   });
   // FIX: The error "Expected 1 arguments, but got 0" occurs because useRef<number>() requires an initial value.
-  // The type is changed to `number | undefined` to reflect that the ref is initialized without a value.
-  const animationFrameId = useRef<number | undefined>();
+  // Initialize useRef with null to explicitly provide an initial value.
+  const animationFrameId = useRef<number | null>(null);
 
   const pollGamepads = useCallback(() => {
     const gamepads = navigator.getGamepads();
@@ -69,7 +69,8 @@ export const useGamepad = (): GamepadState => {
     console.log('Gamepad disconnected:', event.gamepad);
     if (animationFrameId.current) {
       cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = undefined;
+      // FIX: Set ref to null as per its new type.
+      animationFrameId.current = null;
     }
     setGamepadState({ isConnected: false, buttons: {}, axes: {} });
   }, []);
